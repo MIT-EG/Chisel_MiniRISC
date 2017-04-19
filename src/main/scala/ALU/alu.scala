@@ -24,7 +24,7 @@ class Alu extends Module
     val op      = Input(UInt(Constants.OperationWidth.W))
     val flagIn  = Input(new Flags)
 
-    val y       = Output(SInt(Constants.DataWidth.W))
+    val y       = Output(UInt(Constants.DataWidth.W))
     val flagOut = Output(new Flags)
   })
 
@@ -72,14 +72,14 @@ class Alu extends Module
 
 
   //Result and flags of the operation
-  val result = UInt((Constants.DataWidth + 1).W)
-  val carry = Bool()
-  val overflow = Bool()
-  val negative = Bool()
-  val zero = Bool()
+  val result = Wire(UInt((Constants.DataWidth + 1).W))
+  val carry = Wire(Bool())
+  val overflow = Wire(Bool())
+  val negative = Wire(Bool())
+  val zero = Wire(Bool())
 
-  // Result MUX, default: io.a
-   result := MuxCase(io.a, wrapRefArray(Array(
+  // Result MUX, default: 0.U
+   result := MuxCase( 0.U, wrapRefArray(Array(
     (io.op === Operations.pass.U(Constants.OperationWidth.W)) -> io.a,
     (io.op === Operations.add.U(Constants.OperationWidth.W)) -> add_result(Constants.DataWidth - 1, 0),
     (io.op === Operations.sub.U(Constants.OperationWidth.W)) -> sub_result(Constants.DataWidth - 1, 0),
@@ -97,75 +97,30 @@ class Alu extends Module
   )))
 
     //Carry MUX, default: 0
-    //Lehet, hogy érdemes lenne csak azokat az eseteket megírni amikor nem default...
     carry := MuxCase(0.U, wrapRefArray(Array(
-    (io.op === Operations.pass.U(Constants.OperationWidth.W)) -> 0.U,
     (io.op === Operations.add.U(Constants.OperationWidth.W))  -> add_carry,
     (io.op === Operations.sub.U(Constants.OperationWidth.W))  -> sub_carry,
-    (io.op === Operations.and.U(Constants.OperationWidth.W))  -> 0.U,
-    (io.op === Operations.or.U(Constants.OperationWidth.W))   -> 0.U,
-    (io.op === Operations.xor.U(Constants.OperationWidth.W))  -> 0.U,
-    (io.op === Operations.rol.U(Constants.OperationWidth.W))  -> 0.U,
-    (io.op === Operations.ror.U(Constants.OperationWidth.W))  -> 0.U,
     (io.op === Operations.lshl.U(Constants.OperationWidth.W)) -> lshl_carry,
     (io.op === Operations.lshr.U(Constants.OperationWidth.W)) -> lshr_carry,
     (io.op === Operations.ashl.U(Constants.OperationWidth.W)) -> ashl_carry,
-    (io.op === Operations.ashr.U(Constants.OperationWidth.W)) -> ashr_carry,
-    (io.op === Operations.swp.U(Constants.OperationWidth.W))  -> 0.U,
-    (io.op === Operations.cmp.U(Constants.OperationWidth.W))  -> 0.U
+    (io.op === Operations.ashr.U(Constants.OperationWidth.W)) -> ashr_carry
   )))
 
   //Overflow MUX, default: 0
   overflow := MuxCase(0.U, wrapRefArray(Array(
-    (io.op === Operations.pass.U(Constants.OperationWidth.W)) -> 0.U,
     (io.op === Operations.add.U(Constants.OperationWidth.W))  -> add_ovf,
-    (io.op === Operations.sub.U(Constants.OperationWidth.W))  -> sub_ovf,
-    (io.op === Operations.and.U(Constants.OperationWidth.W))  -> 0.U,
-    (io.op === Operations.or.U(Constants.OperationWidth.W))   -> 0.U,
-    (io.op === Operations.xor.U(Constants.OperationWidth.W))  -> 0.U,
-    (io.op === Operations.rol.U(Constants.OperationWidth.W))  -> 0.U,
-    (io.op === Operations.ror.U(Constants.OperationWidth.W))  -> 0.U,
-    (io.op === Operations.lshl.U(Constants.OperationWidth.W)) -> 0.U,
-    (io.op === Operations.lshr.U(Constants.OperationWidth.W)) -> 0.U,
-    (io.op === Operations.ashl.U(Constants.OperationWidth.W)) -> 0.U,
-    (io.op === Operations.ashr.U(Constants.OperationWidth.W)) -> 0.U,
-    (io.op === Operations.swp.U(Constants.OperationWidth.W))  -> 0.U,
-    (io.op === Operations.cmp.U(Constants.OperationWidth.W))  -> 0.U
+    (io.op === Operations.sub.U(Constants.OperationWidth.W))  -> sub_ovf
   )))
 
   //Zero MUX, default: (result === 0.U)
-  zero := MuxCase((result === 0.U), wrapRefArray(Array(
+  zero := MuxCase(( result === 0.U), wrapRefArray(Array(
     (io.op === Operations.pass.U(Constants.OperationWidth.W)) -> 0.U,
-    (io.op === Operations.add.U(Constants.OperationWidth.W))  -> (result === 0.U),
-    (io.op === Operations.sub.U(Constants.OperationWidth.W))  -> (result === 0.U),
-    (io.op === Operations.and.U(Constants.OperationWidth.W))  -> (result === 0.U),
-    (io.op === Operations.or.U(Constants.OperationWidth.W))   -> (result === 0.U),
-    (io.op === Operations.xor.U(Constants.OperationWidth.W))  -> (result === 0.U),
-    (io.op === Operations.rol.U(Constants.OperationWidth.W))  -> (result === 0.U),
-    (io.op === Operations.ror.U(Constants.OperationWidth.W))  -> (result === 0.U),
-    (io.op === Operations.lshl.U(Constants.OperationWidth.W)) -> (result === 0.U),
-    (io.op === Operations.lshr.U(Constants.OperationWidth.W)) -> (result === 0.U),
-    (io.op === Operations.ashl.U(Constants.OperationWidth.W)) -> (result === 0.U),
-    (io.op === Operations.ashr.U(Constants.OperationWidth.W)) -> (result === 0.U),
-    (io.op === Operations.swp.U(Constants.OperationWidth.W))  -> (result === 0.U),
     (io.op === Operations.cmp.U(Constants.OperationWidth.W))  -> cmp_zero
   )))
 
   //Negative MUX, default: result(Constants.DataWidth - 1)
-  negative := MuxCase(result(Constants.DataWidth - 1), wrapRefArray(Array(
+  negative := MuxCase( result(Constants.DataWidth - 1), wrapRefArray(Array(
     (io.op === Operations.pass.U(Constants.OperationWidth.W)) -> 0.U,
-    (io.op === Operations.add.U(Constants.OperationWidth.W))  -> result(Constants.DataWidth - 1),
-    (io.op === Operations.sub.U(Constants.OperationWidth.W))  -> result(Constants.DataWidth - 1),
-    (io.op === Operations.and.U(Constants.OperationWidth.W))  -> result(Constants.DataWidth - 1),
-    (io.op === Operations.or.U(Constants.OperationWidth.W))   -> result(Constants.DataWidth - 1),
-    (io.op === Operations.xor.U(Constants.OperationWidth.W))  -> result(Constants.DataWidth - 1),
-    (io.op === Operations.rol.U(Constants.OperationWidth.W))  -> result(Constants.DataWidth - 1),
-    (io.op === Operations.ror.U(Constants.OperationWidth.W))  -> result(Constants.DataWidth - 1),
-    (io.op === Operations.lshl.U(Constants.OperationWidth.W)) -> result(Constants.DataWidth - 1),
-    (io.op === Operations.lshr.U(Constants.OperationWidth.W)) -> result(Constants.DataWidth - 1),
-    (io.op === Operations.ashl.U(Constants.OperationWidth.W)) -> result(Constants.DataWidth - 1),
-    (io.op === Operations.ashr.U(Constants.OperationWidth.W)) -> result(Constants.DataWidth - 1),
-    (io.op === Operations.swp.U(Constants.OperationWidth.W))  -> result(Constants.DataWidth - 1),
     (io.op === Operations.cmp.U(Constants.OperationWidth.W))  -> cmp_neg
   )))
 
