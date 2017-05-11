@@ -21,7 +21,7 @@ class ALUAddTest(c: Alu) extends PeekPokeTester(c)
         step(1)
         expect(alu.io.y, ((i + j + k) % 256) )
         expect(alu.io.flagOut.carry, ((i + j + k) / 256) )
-        //expect(alu.io.flagOut.overflow, (i + j) / 512) //megbukik
+          //expect(alu.io.flagOut.overflow, (i + j + k) < 0) //megbukik
         expect(alu.io.flagOut.zero, (i + j + k) % 256 == 0 )
         expect(alu.io.flagOut.negative, ((i + j + k) % 256) / 128)
       }
@@ -36,7 +36,7 @@ class ALUAddTester extends ChiselFlatSpec
   {
     "Alu" should s"calculate the sum of it's 'a' and 'b' inputs (with $backendName)" in
       {
-        Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new Alu, backendName)
         {
           c => new ALUAddTest(c)
         } should be (true) //ennek kell lennie az összes teszteset eredményének
@@ -85,7 +85,7 @@ class ALUSubTester extends ChiselFlatSpec
   {
     "Alu" should s"calculate the subtract of it's 'a' and 'b' inputs (with $backendName)" in
       {
-        Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new Alu, backendName)
         {
           c => new ALUSubTest(c)
         } should be (true)
@@ -127,7 +127,7 @@ class ALULogicTester extends ChiselFlatSpec
   {
     "Alu" should s"calculate 'a' AND 'b', 'a' OR 'b' and finally 'a' XOR 'b' (with $backendName)" in
       {
-        Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new Alu, backendName)
         {
           c => new ALULogicTest(c)
         } should be (true)
@@ -181,7 +181,7 @@ class ALUShiftTester extends ChiselFlatSpec
   {
     "Alu" should s"calculate different shifting methods (with $backendName)" in
       {
-        Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new Alu, backendName)
         {
           c => new ALUShiftTest(c)
         } should be (true)
@@ -227,7 +227,7 @@ class ALURestTester extends ChiselFlatSpec
   {
     "Alu" should s"calculate the pass, swap, cmp operations (with $backendName)" in
       {
-        Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new Alu, backendName)
         {
           c => new ALURestTest(c)
         } should be (true)
@@ -243,7 +243,7 @@ class ALUFullTester extends ChiselFlatSpec
   {
     "Alu" should s"calculate the sum of it's 'a' and 'b' inputs (with $backendName)" in
       {
-        Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new Alu, backendName)
         {
           c => new ALUAddTest(c)
         } should be (true)
@@ -251,28 +251,28 @@ class ALUFullTester extends ChiselFlatSpec
 
     "Alu" should s"calculate the subtract of it's 'a' and 'b' inputs (with $backendName)" in
       {
-        Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new Alu, backendName)
         {
           c => new ALUSubTest(c)
         } should be (true)
       }
     "Alu" should s"calculate 'a' AND 'b', 'a' OR 'b' and finally 'a' XOR 'b' (with $backendName)" in
       {
-        Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new Alu, backendName)
         {
           c => new ALULogicTest(c)
         } should be (true)
       }
     "Alu" should s"calculate different shifting methods (with $backendName)" in
       {
-        Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new Alu, backendName)
         {
           c => new ALUShiftTest(c)
         } should be (true)
       }
     "Alu" should s"calculate the pass, swap, cmp operations (with $backendName)" in
       {
-        Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new Alu, backendName)
         {
           c => new ALURestTest(c)
         } should be (true)

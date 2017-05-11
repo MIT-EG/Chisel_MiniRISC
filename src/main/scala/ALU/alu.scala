@@ -3,7 +3,7 @@
 package ALU
 
 import chisel3._
-import chisel3.util.{Cat, Fill, MuxCase}
+import chisel3.util.{Cat, MuxCase}
 
 //Flag bus declaration
 class Flags extends Bundle
@@ -15,7 +15,7 @@ class Flags extends Bundle
 }
 
 //Module declaration
-class Alu extends Module
+class Alu extends Chisel.Module
 {
   val io = IO( new Bundle
   {
@@ -33,12 +33,16 @@ class Alu extends Module
   //*ARITMETICAL*
   val add_result = io.a +& io.b +& io.flagIn.carry //a + b + carry in; bitkiterjesztéssel
   val add_carry = add_result(Constants.DataWidth)
-  val add_ovf = (io.a(Constants.DataWidth - 1) & io.b(Constants.DataWidth - 1)) ^ add_result(Constants.DataWidth - 1) // (a and b) xor result
+  val add_ovf = (io.a(Constants.DataWidth - 1) & io.b(Constants.DataWidth - 1)) ^ add_result(Constants.DataWidth - 1)
+  /*( (io.a(Constants.DataWidth - 1) & io.b(Constants.DataWidth - 1)) & ~(add_result(Constants.DataWidth - 1))) |
+    ((~io.a(Constants.DataWidth - 1) & ~io.b(Constants.DataWidth - 1)) & add_result(Constants.DataWidth - 1))*/
+    //(io.a(Constants.DataWidth - 1) & io.b(Constants.DataWidth - 1)) ^ add_result(Constants.DataWidth - 1)
+    /**/
 
 
   val sub_result = io.a -& io.b -& io.flagIn.carry //a - b - carry in; bitkiterjesztéssel
   val sub_carry = !sub_result(Constants.DataWidth) //carry flag negáltja
-  val sub_ovf = (io.a(Constants.DataWidth - 1) & io.b(Constants.DataWidth - 1)) ^ sub_result(Constants.DataWidth - 1)
+  val sub_ovf = (io.a(Constants.DataWidth - 1) & io.b(Constants.DataWidth - 1)) ^ add_result(Constants.DataWidth - 1)
 
   //*LOGICAL*
   //Nincs flag állítás
@@ -109,7 +113,8 @@ class Alu extends Module
   //Overflow MUX, default: 0
   overflow := MuxCase(0.U, wrapRefArray(Array(
     (io.op === Operations.add.U(Constants.OperationWidth.W))  -> add_ovf,
-    (io.op === Operations.sub.U(Constants.OperationWidth.W))  -> sub_ovf
+    (io.op === Operations.sub.U(Constants.OperationWidth.W))  -> sub_ovf,
+    (io.op === Operations.cmp.U(Constants.OperationWidth.W))  -> sub_ovf
   )))
 
   //Zero MUX, default: (result === 0.U)

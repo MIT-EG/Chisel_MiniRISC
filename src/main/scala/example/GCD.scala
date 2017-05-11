@@ -4,7 +4,7 @@ package example
 
 import chisel3._
 
-class GCD extends Module
+class GCD extends Chisel.Module
 {
   val io = IO( new Bundle
   {
