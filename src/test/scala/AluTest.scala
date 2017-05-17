@@ -3,27 +3,72 @@ import Chisel.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester}
 import ALU.Alu
 import scala.math.pow
 
+//Test Constants
+object TC
+{
+  val MAX = (pow(2, ALU.Constants.DataWidth).toInt - 1)
+  val STEP = 4
+  val MSB = ALU.Constants.DataWidth - 1
+
+  def bit(number : Int, bitNumber : Int): Int =
+  {
+    return (number >> bitNumber) % 2
+  }
+
+  def zero(number : Int) : Boolean =
+  {
+    return number % (MAX + 1) == 0
+  }
+  def carry(number : Int) : Int =
+  {
+    return bit(number, TC.MSB + 1)
+  }
+  def negative(number : Int) : Int =
+  {
+    return bit(number, MSB)
+  }
+
+  def abs(number : Int) : Int =
+  {
+    if(number < 0)
+      {
+        return number + MAX + 1
+      }
+    else
+      {
+        return number
+      }
+  }
+}
+
 //ADD
 class ALUAddTest(c: Alu) extends PeekPokeTester(c)
 {
   private val alu = c
-  val max = (pow(2, ALU.Constants.DataWidth).toInt - 1)
-  for (i <- 0 to max by 8)
+  for (i <- 0 to TC.MAX by TC.STEP)
   {
-    for (j <- 0 to max by 8)
+    for (j <- 0 to TC.MAX by TC.STEP)
     {
       for(k <- 0 to 1) // alapból "by 1"
       {
+
         poke(alu.io.op, ALU.Operations.add)
+
         poke(alu.io.a, i)
         poke(alu.io.b, j)
-        poke(alu.io.flagIn.carry, k) //alapból 1-nek veszi
+
+        poke(alu.io.flagIn.carry, k)
+
         step(1)
-        expect(alu.io.y, ((i + j + k) % 256) )
-        expect(alu.io.flagOut.carry, ((i + j + k) / 256) )
-          //expect(alu.io.flagOut.overflow, (i + j + k) < 0) //megbukik
-        expect(alu.io.flagOut.zero, (i + j + k) % 256 == 0 )
-        expect(alu.io.flagOut.negative, ((i + j + k) % 256) / 128)
+
+        val num = i + j + k
+        expect(alu.io.y, num % (TC.MAX + 1) )
+
+        expect(alu.io.flagOut.carry, TC.carry(num) )
+        expect(alu.io.flagOut.zero, TC.zero(num) )
+        expect(alu.io.flagOut.negative, TC.negative(num) )
+
+        //expect(alu.io.flagOut.overflow, alu.io.flagOut.negative == 1) //megbukik
       }
     }
   }
@@ -56,23 +101,21 @@ class ALUSubTest(c: Alu) extends PeekPokeTester(c)
       for(k <- 0 to 1)
       {
         poke(alu.io.op, ALU.Operations.sub)
+
         poke(alu.io.a, i)
         poke(alu.io.b, j)
         poke(alu.io.flagIn.carry, k)
+
         step(1)
 
-        if( (i - j - k) < 0 )
-        {
-          expect(alu.io.y, ((i - j - k) + 256) % 256 )
-        }
-        else
-        {
-          expect(alu.io.y, (i - j - k) % 256 )
-        }
-        //expect(alu.io.flagOut.carry, ((i - j - k) / 256)) //megbukik
+        val num = TC.abs(i - j - k)
+        expect(alu.io.y, num % (TC.MAX + 1) )
+
+        //expect(alu.io.flagOut.carry, TC.carry(num)) //megbukik
         //expect(alu.io.flagOut.overflow, (i + j) / 512) //megbukik
-        expect(alu.io.flagOut.zero, (i - j - k) % 256 == 0 )
-        //expect(alu.io.flagOut.negative, ((i - j - k) % 256) / 128) //megbukik
+
+        expect(alu.io.flagOut.zero, TC.zero(num) )
+        expect(alu.io.flagOut.negative, TC.negative(num) )
       }
     }
   }
@@ -107,15 +150,26 @@ class ALULogicTest(c: Alu) extends PeekPokeTester(c)
 
         poke(alu.io.op, ALU.Operations.and)
         step(1)
-        expect(alu.io.y, i & j)
+
+        val num = i & j
+        expect(alu.io.y, num)
+        expect(alu.io.flagOut.zero, TC.zero(num) )
+        expect(alu.io.flagOut.negative, TC.negative(num) )
 
         poke(alu.io.op, ALU.Operations.or)
         step(1)
-        expect(alu.io.y, i | j)
+
+        val num2 = i | j
+        expect(alu.io.y, num2)
+        expect(alu.io.flagOut.zero, TC.zero(num2) )
+        expect(alu.io.flagOut.negative, TC.negative(num2) )
 
         poke(alu.io.op, ALU.Operations.xor)
         step(1)
-        expect(alu.io.y, i ^ j)
+        val num3 = i ^ j
+        expect(alu.io.y, num3)
+        expect(alu.io.flagOut.zero, TC.zero(num3) )
+        expect(alu.io.flagOut.negative, TC.negative(num3) )
     }
   }
 }

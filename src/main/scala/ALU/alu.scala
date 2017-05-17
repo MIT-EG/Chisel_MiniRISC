@@ -31,9 +31,16 @@ class Alu extends Chisel.Module
   //***OPERATIONS***
 
   //*ARITMETICAL*
-  val add_result = io.a +& io.b +& io.flagIn.carry //a + b + carry in; bitkiterjesztéssel
+
+  //ADD: a + b + carry in; bitkiterjesztéssel
+  val add_result = io.a +& io.b +& io.flagIn.carry
   val add_carry = add_result(Constants.DataWidth)
-  val add_ovf = (io.a(Constants.DataWidth - 1) & io.b(Constants.DataWidth - 1)) ^ add_result(Constants.DataWidth - 1)
+
+  //TODO Van beépített overflow operátor: `val flagsOut = flagsIn , tesztelni
+  //Vagy a "Functional Abstraction" részben saját overflow számítót definiálni
+
+  val add_ovf = ( ~(io.a(Constants.DataWidth - 1) ^ io.b(Constants.DataWidth - 1)) ) ^ add_result(Constants.DataWidth - 1)
+    //(io.a(Constants.DataWidth - 1) & io.b(Constants.DataWidth - 1)) ^ add_result(Constants.DataWidth - 1)
   /*( (io.a(Constants.DataWidth - 1) & io.b(Constants.DataWidth - 1)) & ~(add_result(Constants.DataWidth - 1))) |
     ((~io.a(Constants.DataWidth - 1) & ~io.b(Constants.DataWidth - 1)) & add_result(Constants.DataWidth - 1))*/
     //(io.a(Constants.DataWidth - 1) & io.b(Constants.DataWidth - 1)) ^ add_result(Constants.DataWidth - 1)
@@ -130,7 +137,7 @@ class Alu extends Chisel.Module
   )))
 
 
-  io.y := result(Constants.DataWidth - 1, 0)
+  io.y := result
   io.flagOut.carry := carry
   io.flagOut.overflow := overflow
   io.flagOut.zero := zero
