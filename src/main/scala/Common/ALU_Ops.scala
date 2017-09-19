@@ -1,8 +1,8 @@
 //List of operations
-package ALU
+package Common
 
 //
-object Operations
+object ALU_Ops
 {
   final val pass = 0
 

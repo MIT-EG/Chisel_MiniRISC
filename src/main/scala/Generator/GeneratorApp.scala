@@ -1,11 +1,11 @@
 //ajndkajsndkjanskdjn
 package Generator
 
+import DataStructure.ALU
 import chisel3._
-import ALU.Alu
 
-  object GeneratorApp extends App
+object GeneratorApp extends App
   {
-    chisel3.Driver.execute(args, () => new Alu())
+    chisel3.Driver.execute(args, () => new ALU())
   }
 
