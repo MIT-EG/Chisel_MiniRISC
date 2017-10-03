@@ -32,7 +32,7 @@ class ALU extends Chisel.Module
   //TODO Van beépített overflow operátor: `val flagsOut = flagsIn , tesztelni
   //Vagy a "Functional Abstraction" részben saját overflow számítót definiálni
 
-  val add_ovf = ( ~(io.a(Constants.DATA_WIDTH - 1) ^ io.b(Constants.DATA_WIDTH - 1)) ) ^ add_result(Constants.DATA_WIDTH - 1)
+  val add_ovf = ( ~(io.a(Constants.DATA_WIDTH - 1) ^ io.b(Constants.DATA_WIDTH - 1)) )  ^ add_result(Constants.DATA_WIDTH - 1)
     //(io.a(Constants.DataWidth - 1) & io.b(Constants.DataWidth - 1)) ^ add_result(Constants.DataWidth - 1)
   /*( (io.a(Constants.DataWidth - 1) & io.b(Constants.DataWidth - 1)) & ~(add_result(Constants.DataWidth - 1))) |
     ((~io.a(Constants.DataWidth - 1) & ~io.b(Constants.DataWidth - 1)) & add_result(Constants.DataWidth - 1))*/
@@ -84,7 +84,7 @@ class ALU extends Chisel.Module
 
   // Result MUX, default: 0.U
    result := MuxCase( 0.U, wrapRefArray(Array(
-    (io.op === ALU_Ops.pass.U(Constants.OPERATION_WIDTH.W)) -> io.a,
+    (io.op === ALU_Ops.pass.U(Constants.OPERATION_WIDTH.W)) -> io.b,
     (io.op === ALU_Ops.add.U(Constants.OPERATION_WIDTH.W)) -> add_result(Constants.DATA_WIDTH - 1, 0),
     (io.op === ALU_Ops.sub.U(Constants.OPERATION_WIDTH.W)) -> sub_result(Constants.DATA_WIDTH - 1, 0),
     (io.op === ALU_Ops.and.U(Constants.OPERATION_WIDTH.W)) -> and_result,

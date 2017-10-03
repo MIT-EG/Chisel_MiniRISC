@@ -6,6 +6,6 @@ import chisel3._
 
 object GeneratorApp extends App
   {
-    chisel3.Driver.execute(args, () => new ALU())
+    chisel3.Driver.execute(args, () => new DataStructure.ACC())
   }
 

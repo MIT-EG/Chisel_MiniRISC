@@ -44,8 +44,21 @@ class DataStructure extends Chisel.Module
   }
   alu.io.b := mux2
 
+  //////////////////////MUX3/////////////////////////
+  //MUX3: inputs: data mem address from control, rb from acc; output data mem.io.address
+  val mux3 = new Bool()
+  when(io.ctrl2data.mux3sel === 1.U)
+  {
+    mux3 := acc.io.rb
+  }   .otherwise
+  {
+    mux3 := io.ctrl2data.mem_addr
+  }
+  io.data_mem.addr := mux3
+
   //////////////////////ALU & REGS/////////////////////////
 
   alu.io.a := acc.io.ra
   acc.io.ra := io.data_mem.mem2data
+  acc.io.we := io.ctrl2data.regs_we
 }

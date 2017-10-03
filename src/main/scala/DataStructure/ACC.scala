@@ -10,8 +10,6 @@ class ACC extends Chisel.Module
 {
   val io = IO( new Bundle
   {
-    val clk = Input(Bool())
-
     val addr_A = Input(UInt( log2Ceil( Constants.NUMBER_OF_REGISTERS ).W ))
     val addr_B = Input(UInt( log2Ceil( Constants.NUMBER_OF_REGISTERS ).W ))
 
@@ -24,7 +22,7 @@ class ACC extends Chisel.Module
 
   val regs = Mem(Constants.NUMBER_OF_REGISTERS, UInt(Constants.DATA_WIDTH.W))
 
-  when(io.we === 1.U) //and clk === 1.U ???
+  when(io.we === 1.U)
   {
     regs(io.addr_A) := io.din
   }

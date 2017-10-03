@@ -1,14 +1,16 @@
 
-import Chisel.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester}
-import ALU.Alu
+import Chisel.iotesters.{ChiselFlatSpec, PeekPokeTester}
+import Common.{ALU_Ops, Constants}
+import DataStructure.ALU
+
 import scala.math.pow
 
 //Test Constants
 object TC
 {
-  val MAX = (pow(2, ALU.Constants.DataWidth).toInt - 1)
+  val MAX = (pow(2, Constants.DATA_WIDTH).toInt - 1)
   val STEP = 4
-  val MSB = ALU.Constants.DataWidth - 1
+  val MSB = Constants.DATA_WIDTH - 1
 
   def bit(number : Int, bitNumber : Int): Int =
   {
@@ -42,7 +44,7 @@ object TC
 }
 
 //ADD
-class ALUAddTest(c: Alu) extends PeekPokeTester(c)
+class ALUAddTest(c: ALU) extends PeekPokeTester(c)
 {
   private val alu = c
   for (i <- 0 to TC.MAX by TC.STEP)
@@ -52,21 +54,21 @@ class ALUAddTest(c: Alu) extends PeekPokeTester(c)
       for(k <- 0 to 1) // alapból "by 1"
       {
 
-        poke(alu.io.op, ALU.Operations.add)
+        poke(alu.io.op, ALU_Ops.add)
 
         poke(alu.io.a, i)
         poke(alu.io.b, j)
 
-        poke(alu.io.flagIn.carry, k)
+        poke(alu.io.flag_in.carry, k)
 
         step(1)
 
         val num = i + j + k
         expect(alu.io.y, num % (TC.MAX + 1) )
 
-        expect(alu.io.flagOut.carry, TC.carry(num) )
-        expect(alu.io.flagOut.zero, TC.zero(num) )
-        expect(alu.io.flagOut.negative, TC.negative(num) )
+        expect(alu.io.flag_out.carry, TC.carry(num) )
+        expect(alu.io.flag_out.zero, TC.zero(num) )
+        expect(alu.io.flag_out.negative, TC.negative(num) )
 
         //expect(alu.io.flagOut.overflow, alu.io.flagOut.negative == 1) //megbukik
       }
@@ -81,7 +83,7 @@ class ALUAddTester extends ChiselFlatSpec
   {
     "Alu" should s"calculate the sum of it's 'a' and 'b' inputs (with $backendName)" in
       {
-        chisel3.iotesters.Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new ALU, backendName)
         {
           c => new ALUAddTest(c)
         } should be (true) //ennek kell lennie az összes teszteset eredményének
@@ -90,21 +92,21 @@ class ALUAddTester extends ChiselFlatSpec
 }
 
 //SUBTRACT
-class ALUSubTest(c: Alu) extends PeekPokeTester(c)
+class ALUSubTest(c: ALU) extends PeekPokeTester(c)
 {
   private val alu = c
-  val max = (pow(2, ALU.Constants.DataWidth).toInt - 1)
+  val max = (pow(2, Common.Constants.DATA_WIDTH).toInt - 1)
   for (i <- 0 to max by 8)
   {
     for (j <- 0 to max by 8)
     {
       for(k <- 0 to 1)
       {
-        poke(alu.io.op, ALU.Operations.sub)
+        poke(alu.io.op, ALU_Ops.sub)
 
         poke(alu.io.a, i)
         poke(alu.io.b, j)
-        poke(alu.io.flagIn.carry, k)
+        poke(alu.io.flag_in.carry, k)
 
         step(1)
 
@@ -114,8 +116,8 @@ class ALUSubTest(c: Alu) extends PeekPokeTester(c)
         //expect(alu.io.flagOut.carry, TC.carry(num)) //megbukik
         //expect(alu.io.flagOut.overflow, (i + j) / 512) //megbukik
 
-        expect(alu.io.flagOut.zero, TC.zero(num) )
-        expect(alu.io.flagOut.negative, TC.negative(num) )
+        expect(alu.io.flag_out.zero, TC.zero(num) )
+        expect(alu.io.flag_out.negative, TC.negative(num) )
       }
     }
   }
@@ -128,7 +130,7 @@ class ALUSubTester extends ChiselFlatSpec
   {
     "Alu" should s"calculate the subtract of it's 'a' and 'b' inputs (with $backendName)" in
       {
-        chisel3.iotesters.Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new ALU, backendName)
         {
           c => new ALUSubTest(c)
         } should be (true)
@@ -137,10 +139,10 @@ class ALUSubTester extends ChiselFlatSpec
 }
 
 //AND, OR, XOR
-class ALULogicTest(c: Alu) extends PeekPokeTester(c)
+class ALULogicTest(c: ALU) extends PeekPokeTester(c)
 {
   private val alu = c
-  val max = (pow(2, ALU.Constants.DataWidth).toInt - 1)
+  val max = (pow(2, Common.Constants.DATA_WIDTH).toInt - 1)
   for (i <- 0 to max by 8)
   {
     for (j <- 0 to max by 8)
@@ -148,28 +150,29 @@ class ALULogicTest(c: Alu) extends PeekPokeTester(c)
         poke(alu.io.a, i)
         poke(alu.io.b, j)
 
-        poke(alu.io.op, ALU.Operations.and)
+        poke(alu.io.op, Common.ALU_Ops.and)
         step(1)
 
-        val num = i & j
+        var num = i & j
         expect(alu.io.y, num)
-        expect(alu.io.flagOut.zero, TC.zero(num) )
-        expect(alu.io.flagOut.negative, TC.negative(num) )
+        expect(alu.io.flag_out.zero, TC.zero(num) )
+        expect(alu.io.flag_out.negative, TC.negative(num) )
 
-        poke(alu.io.op, ALU.Operations.or)
+        poke(alu.io.op, Common.ALU_Ops.or)
         step(1)
 
-        val num2 = i | j
-        expect(alu.io.y, num2)
-        expect(alu.io.flagOut.zero, TC.zero(num2) )
-        expect(alu.io.flagOut.negative, TC.negative(num2) )
+        num = i | j
+        expect(alu.io.y, num)
+        expect(alu.io.flag_out.zero, TC.zero(num) )
+        expect(alu.io.flag_out.negative, TC.negative(num) )
 
-        poke(alu.io.op, ALU.Operations.xor)
+        poke(alu.io.op, Common.ALU_Ops.xor)
         step(1)
-        val num3 = i ^ j
-        expect(alu.io.y, num3)
-        expect(alu.io.flagOut.zero, TC.zero(num3) )
-        expect(alu.io.flagOut.negative, TC.negative(num3) )
+
+        num = i ^ j
+        expect(alu.io.y, num)
+        expect(alu.io.flag_out.zero, TC.zero(num) )
+        expect(alu.io.flag_out.negative, TC.negative(num) )
     }
   }
 }
@@ -181,7 +184,7 @@ class ALULogicTester extends ChiselFlatSpec
   {
     "Alu" should s"calculate 'a' AND 'b', 'a' OR 'b' and finally 'a' XOR 'b' (with $backendName)" in
       {
-        chisel3.iotesters.Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new ALU, backendName)
         {
           c => new ALULogicTest(c)
         } should be (true)
@@ -190,41 +193,41 @@ class ALULogicTester extends ChiselFlatSpec
 }
 
 //ROL, ROR, ASHL, ASHR, LSHL, LSHR
-class ALUShiftTest(c: Alu) extends PeekPokeTester(c)
+class ALUShiftTest(c: ALU) extends PeekPokeTester(c)
 {
   private val alu = c
-  val max = (pow(2, ALU.Constants.DataWidth).toInt - 1)
+  val max = (pow(2, Common.Constants.DATA_WIDTH).toInt - 1)
   for (i <- 0 to max by 1)
   {
         poke(alu.io.a, i)
 
-        poke(alu.io.op, ALU.Operations.rol)
+        poke(alu.io.op, Common.ALU_Ops.rol)
         step(1)
         expect(alu.io.y, ((i << 1) + i / 128) % 256)
 
-        poke(alu.io.op, ALU.Operations.ror)
+        poke(alu.io.op, Common.ALU_Ops.ror)
         step(1)
         expect(alu.io.y, ((i / 2) + ((i % 2) * 128)) % 256)
 
-        poke(alu.io.op, ALU.Operations.lshl)
+        poke(alu.io.op, Common.ALU_Ops.lshl)
         step(1)
         expect(alu.io.y, (i << 1) % 256)
-        expect(alu.io.flagOut.carry, (i / 128))
+        expect(alu.io.flag_out.carry, (i / 128))
 
-        poke(alu.io.op, ALU.Operations.lshr)
+        poke(alu.io.op, Common.ALU_Ops.lshr)
         step(1)
         expect(alu.io.y, (i >> 1) % 256)
-        expect(alu.io.flagOut.carry, (i % 2))
+        expect(alu.io.flag_out.carry, (i % 2))
 
-        poke(alu.io.op, ALU.Operations.ashl)
+        poke(alu.io.op, Common.ALU_Ops.ashl)
         step(1)
         expect(alu.io.y, ((i / 128) * 128) + ((i << 1) % 128) )
-        expect(alu.io.flagOut.carry, ((i % 128) / 64))
+        expect(alu.io.flag_out.carry, ((i % 128) / 64))
 
-        poke(alu.io.op, ALU.Operations.ashr)
+        poke(alu.io.op, Common.ALU_Ops.ashr)
         step(1)
         expect(alu.io.y, ((i / 128) * 128) + ((i % 128) / 2))
-        expect(alu.io.flagOut.carry, (i % 2))
+        expect(alu.io.flag_out.carry, (i % 2))
   }
 }
 
@@ -235,7 +238,7 @@ class ALUShiftTester extends ChiselFlatSpec
   {
     "Alu" should s"calculate different shifting methods (with $backendName)" in
       {
-        chisel3.iotesters.Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new ALU, backendName)
         {
           c => new ALUShiftTest(c)
         } should be (true)
@@ -244,32 +247,32 @@ class ALUShiftTester extends ChiselFlatSpec
 }
 
 //PASS, SWAP, COMPARE
-class ALURestTest(c: Alu) extends PeekPokeTester(c)
+class ALURestTest(c: ALU) extends PeekPokeTester(c)
 {
   private val alu = c
-  val max = (pow(2, ALU.Constants.DataWidth).toInt - 1)
+  val max = (pow(2, Common.Constants.DATA_WIDTH).toInt - 1)
   for (i <- 0 to max by 1)
   {
     poke(alu.io.a, i)
 
     //pass
-    poke(alu.io.op, ALU.Operations.pass)
+    poke(alu.io.op, Common.ALU_Ops.pass)
     step(1)
     expect(alu.io.y, i % 256)
 
     //swap
     step(1)
-    poke(alu.io.op, ALU.Operations.swp)
+    poke(alu.io.op, Common.ALU_Ops.swp)
     expect(alu.io.y, ((i << 4) % 256) + (i >> 4))
 
     //cmp
     for(j <- 0 to max by 8)
     {
       poke(alu.io.b, j)
-      poke(alu.io.op, ALU.Operations.cmp)
+      poke(alu.io.op, Common.ALU_Ops.cmp)
       step(1)
-      expect(alu.io.flagOut.negative, i < j)
-      expect(alu.io.flagOut.zero, i == j)
+      expect(alu.io.flag_out.negative, i < j)
+      expect(alu.io.flag_out.zero, i == j)
     }
   }
 }
@@ -281,7 +284,7 @@ class ALURestTester extends ChiselFlatSpec
   {
     "Alu" should s"calculate the pass, swap, cmp operations (with $backendName)" in
       {
-        chisel3.iotesters.Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new ALU, backendName)
         {
           c => new ALURestTest(c)
         } should be (true)
@@ -297,7 +300,7 @@ class ALUFullTester extends ChiselFlatSpec
   {
     "Alu" should s"calculate the sum of it's 'a' and 'b' inputs (with $backendName)" in
       {
-        chisel3.iotesters.Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new ALU, backendName)
         {
           c => new ALUAddTest(c)
         } should be (true)
@@ -305,28 +308,28 @@ class ALUFullTester extends ChiselFlatSpec
 
     "Alu" should s"calculate the subtract of it's 'a' and 'b' inputs (with $backendName)" in
       {
-        chisel3.iotesters.Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new ALU, backendName)
         {
           c => new ALUSubTest(c)
         } should be (true)
       }
     "Alu" should s"calculate 'a' AND 'b', 'a' OR 'b' and finally 'a' XOR 'b' (with $backendName)" in
       {
-        chisel3.iotesters.Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new ALU, backendName)
         {
           c => new ALULogicTest(c)
         } should be (true)
       }
     "Alu" should s"calculate different shifting methods (with $backendName)" in
       {
-        chisel3.iotesters.Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new ALU, backendName)
         {
           c => new ALUShiftTest(c)
         } should be (true)
       }
     "Alu" should s"calculate the pass, swap, cmp operations (with $backendName)" in
       {
-        chisel3.iotesters.Driver(() => new Alu, backendName)
+        chisel3.iotesters.Driver(() => new ALU, backendName)
         {
           c => new ALURestTest(c)
         } should be (true)
