@@ -31,7 +31,7 @@ class FibonacciTest(c: DataStructure) extends PeekPokeTester(c)
   poke(ds.io.ctrl2data.regs_a, 0)
   poke(ds.io.ctrl2data.regs_we, 1)
   step(1)
-  expect(ds.acc.regs(0), 0)
+  expect(ds.rf.regs(0), 0)
 
 
 }

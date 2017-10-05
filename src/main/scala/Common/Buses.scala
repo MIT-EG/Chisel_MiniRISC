@@ -6,12 +6,22 @@ import chisel3.util.log2Ceil
 
 object Buses
 {
-  class Flags extends Bundle
+  class alu_flags extends Bundle
   {
     val carry = Bool()
     val negative = Bool()
     val overflow = Bool()
     val zero = Bool()
+  }
+
+  class flags extends Bundle
+  {
+    val carry = Bool()
+    val negative = Bool()
+    val overflow = Bool()
+    val zero = Bool()
+    val it_en = Bool()
+    val it_flag = Bool()
   }
 
   class data2ctrl extends Bundle
@@ -28,7 +38,7 @@ object Buses
     val mux2sel = Bool()
     val mux3sel = Bool()
 
-    val alu_op = UInt(Constants.OPERATION_WIDTH.W)
+    val alu_op = UInt(Constants.ALU_OP_WIDTH.W)
     val const = UInt(Constants.DATA_WIDTH.W)
 
     val regs_a = UInt( log2Ceil( Constants.NUMBER_OF_REGISTERS ).W )
@@ -67,5 +77,12 @@ object Buses
     val addr = Output(UInt(Constants.PROGRAM_MEMORY_SIZE.W))
 
     val data = Input(UInt(Constants.DATA_WIDTH.W))
+  }
+
+  class pmem2ctrl extends Bundle
+  {
+    val addr = Input(UInt(Constants.PROGRAM_MEMORY_SIZE.W))
+
+    val data = Output(UInt(Constants.DATA_WIDTH.W))
   }
 }

@@ -18,7 +18,7 @@ class DataStructure extends Chisel.Module
   })
 
   val alu = new ALU()
-  val acc = new ACC()
+  val rf = new RegisterFile()
 
   //////////////////////MUX1/////////////////////////
   //MUX1: inputs: memory data in, alu dout; output: regs data in
@@ -30,7 +30,7 @@ class DataStructure extends Chisel.Module
   {
     mux1 := alu.io.y
   }
-  acc.io.din := mux1
+  rf.io.din := mux1
 
   //////////////////////MUX2/////////////////////////
   //MUX2: inputs: constant from control, regb from regs; output alu op2
@@ -40,7 +40,7 @@ class DataStructure extends Chisel.Module
     mux2 := io.ctrl2data.const
   } .otherwise
   {
-    mux2 := acc.io.rb
+    mux2 := rf.io.rb
   }
   alu.io.b := mux2
 
@@ -49,7 +49,7 @@ class DataStructure extends Chisel.Module
   val mux3 = new Bool()
   when(io.ctrl2data.mux3sel === 1.U)
   {
-    mux3 := acc.io.rb
+    mux3 := rf.io.rb
   }   .otherwise
   {
     mux3 := io.ctrl2data.mem_addr
@@ -58,7 +58,7 @@ class DataStructure extends Chisel.Module
 
   //////////////////////ALU & REGS/////////////////////////
 
-  alu.io.a := acc.io.ra
-  acc.io.ra := io.data_mem.mem2data
-  acc.io.we := io.ctrl2data.regs_we
+  alu.io.a := rf.io.ra
+  rf.io.ra := io.data_mem.mem2data
+  rf.io.we := io.ctrl2data.regs_we
 }

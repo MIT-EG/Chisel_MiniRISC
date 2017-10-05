@@ -2,7 +2,7 @@
 
 package DataStructure
 
-import Common.Buses.Flags
+import Common.Buses.alu_flags
 import Common.{ALU_Ops, Constants}
 import chisel3._
 import chisel3.util.{Cat, MuxCase}
@@ -14,11 +14,11 @@ class ALU extends Chisel.Module
   {
     val a       = Input(UInt(Constants.DATA_WIDTH.W))
     val b       = Input(UInt(Constants.DATA_WIDTH.W))
-    val op      = Input(UInt(Constants.OPERATION_WIDTH.W))
-    val flag_in  = Input(new Flags)
+    val op      = Input(UInt(Constants.ALU_OP_WIDTH.W))
+    val flag_in  = Input(new alu_flags)
 
     val y       = Output(UInt(Constants.DATA_WIDTH.W))
-    val flag_out = Output(new Flags)
+    val flag_out = Output(new alu_flags)
   })
 
   //***OPERATIONS***
@@ -84,49 +84,49 @@ class ALU extends Chisel.Module
 
   // Result MUX, default: 0.U
    result := MuxCase( 0.U, wrapRefArray(Array(
-    (io.op === ALU_Ops.pass.U(Constants.OPERATION_WIDTH.W)) -> io.b,
-    (io.op === ALU_Ops.add.U(Constants.OPERATION_WIDTH.W)) -> add_result(Constants.DATA_WIDTH - 1, 0),
-    (io.op === ALU_Ops.sub.U(Constants.OPERATION_WIDTH.W)) -> sub_result(Constants.DATA_WIDTH - 1, 0),
-    (io.op === ALU_Ops.and.U(Constants.OPERATION_WIDTH.W)) -> and_result,
-    (io.op === ALU_Ops.or.U(Constants.OPERATION_WIDTH.W)) -> or_result,
-    (io.op === ALU_Ops.xor.U(Constants.OPERATION_WIDTH.W)) -> xor_result,
-    (io.op === ALU_Ops.rol.U(Constants.OPERATION_WIDTH.W)) -> rol_result,
-    (io.op === ALU_Ops.ror.U(Constants.OPERATION_WIDTH.W)) -> ror_result,
-    (io.op === ALU_Ops.lshl.U(Constants.OPERATION_WIDTH.W)) -> lshl_result,
-    (io.op === ALU_Ops.lshr.U(Constants.OPERATION_WIDTH.W)) -> lshr_result,
-    (io.op === ALU_Ops.ashl.U(Constants.OPERATION_WIDTH.W)) -> ashl_result,
-    (io.op === ALU_Ops.ashr.U(Constants.OPERATION_WIDTH.W)) -> ashr_result,
-    (io.op === ALU_Ops.swp.U(Constants.OPERATION_WIDTH.W)) -> swp_result,
-    (io.op === ALU_Ops.cmp.U(Constants.OPERATION_WIDTH.W)) -> 0.U
+    (io.op === ALU_Ops.pass.U(Constants.ALU_OP_WIDTH.W)) -> io.b,
+    (io.op === ALU_Ops.add.U(Constants.ALU_OP_WIDTH.W)) -> add_result(Constants.DATA_WIDTH - 1, 0),
+    (io.op === ALU_Ops.sub.U(Constants.ALU_OP_WIDTH.W)) -> sub_result(Constants.DATA_WIDTH - 1, 0),
+    (io.op === ALU_Ops.and.U(Constants.ALU_OP_WIDTH.W)) -> and_result,
+    (io.op === ALU_Ops.or.U(Constants.ALU_OP_WIDTH.W)) -> or_result,
+    (io.op === ALU_Ops.xor.U(Constants.ALU_OP_WIDTH.W)) -> xor_result,
+    (io.op === ALU_Ops.rol.U(Constants.ALU_OP_WIDTH.W)) -> rol_result,
+    (io.op === ALU_Ops.ror.U(Constants.ALU_OP_WIDTH.W)) -> ror_result,
+    (io.op === ALU_Ops.lshl.U(Constants.ALU_OP_WIDTH.W)) -> lshl_result,
+    (io.op === ALU_Ops.lshr.U(Constants.ALU_OP_WIDTH.W)) -> lshr_result,
+    (io.op === ALU_Ops.ashl.U(Constants.ALU_OP_WIDTH.W)) -> ashl_result,
+    (io.op === ALU_Ops.ashr.U(Constants.ALU_OP_WIDTH.W)) -> ashr_result,
+    (io.op === ALU_Ops.swp.U(Constants.ALU_OP_WIDTH.W)) -> swp_result,
+    (io.op === ALU_Ops.cmp.U(Constants.ALU_OP_WIDTH.W)) -> 0.U
   )))
 
     //Carry MUX, default: 0
     carry := MuxCase(0.U, wrapRefArray(Array(
-    (io.op === ALU_Ops.add.U(Constants.OPERATION_WIDTH.W))  -> add_carry,
-    (io.op === ALU_Ops.sub.U(Constants.OPERATION_WIDTH.W))  -> sub_carry,
-    (io.op === ALU_Ops.lshl.U(Constants.OPERATION_WIDTH.W)) -> lshl_carry,
-    (io.op === ALU_Ops.lshr.U(Constants.OPERATION_WIDTH.W)) -> lshr_carry,
-    (io.op === ALU_Ops.ashl.U(Constants.OPERATION_WIDTH.W)) -> ashl_carry,
-    (io.op === ALU_Ops.ashr.U(Constants.OPERATION_WIDTH.W)) -> ashr_carry
+    (io.op === ALU_Ops.add.U(Constants.ALU_OP_WIDTH.W))  -> add_carry,
+    (io.op === ALU_Ops.sub.U(Constants.ALU_OP_WIDTH.W))  -> sub_carry,
+    (io.op === ALU_Ops.lshl.U(Constants.ALU_OP_WIDTH.W)) -> lshl_carry,
+    (io.op === ALU_Ops.lshr.U(Constants.ALU_OP_WIDTH.W)) -> lshr_carry,
+    (io.op === ALU_Ops.ashl.U(Constants.ALU_OP_WIDTH.W)) -> ashl_carry,
+    (io.op === ALU_Ops.ashr.U(Constants.ALU_OP_WIDTH.W)) -> ashr_carry
   )))
 
   //Overflow MUX, default: 0
   overflow := MuxCase(0.U, wrapRefArray(Array(
-    (io.op === ALU_Ops.add.U(Constants.OPERATION_WIDTH.W))  -> add_ovf,
-    (io.op === ALU_Ops.sub.U(Constants.OPERATION_WIDTH.W))  -> sub_ovf,
-    (io.op === ALU_Ops.cmp.U(Constants.OPERATION_WIDTH.W))  -> sub_ovf
+    (io.op === ALU_Ops.add.U(Constants.ALU_OP_WIDTH.W))  -> add_ovf,
+    (io.op === ALU_Ops.sub.U(Constants.ALU_OP_WIDTH.W))  -> sub_ovf,
+    (io.op === ALU_Ops.cmp.U(Constants.ALU_OP_WIDTH.W))  -> sub_ovf
   )))
 
   //Zero MUX, default: (result === 0.U)
   zero := MuxCase(( result === 0.U), wrapRefArray(Array(
-    (io.op === ALU_Ops.pass.U(Constants.OPERATION_WIDTH.W)) -> 0.U,
-    (io.op === ALU_Ops.cmp.U(Constants.OPERATION_WIDTH.W))  -> cmp_zero
+    (io.op === ALU_Ops.pass.U(Constants.ALU_OP_WIDTH.W)) -> 0.U,
+    (io.op === ALU_Ops.cmp.U(Constants.ALU_OP_WIDTH.W))  -> cmp_zero
   )))
 
   //Negative MUX, default: result(Constants.DataWidth - 1)
   negative := MuxCase( result(Constants.DATA_WIDTH - 1), wrapRefArray(Array(
-    (io.op === ALU_Ops.pass.U(Constants.OPERATION_WIDTH.W)) -> 0.U,
-    (io.op === ALU_Ops.cmp.U(Constants.OPERATION_WIDTH.W))  -> cmp_neg
+    (io.op === ALU_Ops.pass.U(Constants.ALU_OP_WIDTH.W)) -> 0.U,
+    (io.op === ALU_Ops.cmp.U(Constants.ALU_OP_WIDTH.W))  -> cmp_neg
   )))
 
 
