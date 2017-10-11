@@ -1,13 +1,13 @@
 package DataStructure
 
 import chisel3._
-import Common.{Buses, Constants}
+import Common.{ Constants}
 
 class DataMemory extends Chisel.Module
 {
   val io = IO(new Bundle
   {
-    val mem_if = new Buses.dmem2data();
+    val mem_if = new Common.dmem2data();
   })
 
   val mem = Mem(Constants.DATA_MEMORY_SIZE, UInt(Constants.DATA_WIDTH.W))

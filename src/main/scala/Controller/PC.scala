@@ -19,7 +19,7 @@ class PC extends Chisel.Module
   })
 
   //PC deklaráció
-  var pc_reg = UInt(log2Ceil(Constants.PROGRAM_MEMORY_SIZE))
+  var pc_reg = Reg(UInt(log2Ceil(Constants.PROGRAM_MEMORY_SIZE)))
   pc_reg = 0.U
   io.pc := pc_reg
 

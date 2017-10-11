@@ -1,7 +1,7 @@
 //
 package DataStructure
 
-import Common.Buses
+import Common._
 import chisel3._
 import chisel3.util.{Cat, MuxCase}
 
@@ -10,19 +10,21 @@ class DataStructure extends Chisel.Module
   //////////////////////PORT/////////////////////////
   val io = IO(new Bundle
   {
-    val data_mem = new Buses.data2dmem()
+    val data_mem = new Common.data2dmem()
 
-    val ctrl2data = Input(new Buses.ctrl2data())
+    val ctrl2data = Input(new ctrl2data())
 
-    val data2ctrl = Output(new Buses.data2ctrl())
+    val data2ctrl = Output(new data2ctrl())
   })
 
-  val alu = new ALU()
-  val rf = new RegisterFile()
+  val alu = Module(new ALU())
+  val rf = Module(new RegisterFile())
+
+  //Muxra 2 bemenetű "Mux" chisel nyelvi elem
 
   //////////////////////MUX1/////////////////////////
   //MUX1: inputs: memory data in, alu dout; output: regs data in
-  val mux1 = new Bool()
+  val mux1 = Wire(new Bool())
   when(io.ctrl2data.mux1sel === 1.U)
   {
     mux1 := io.data_mem.mem2data
@@ -34,7 +36,7 @@ class DataStructure extends Chisel.Module
 
   //////////////////////MUX2/////////////////////////
   //MUX2: inputs: constant from control, regb from regs; output alu op2
-  val mux2 = new Bool()
+  val mux2 = Wire(new Bool())
   when(io.ctrl2data.mux2sel === 1.U)
   {
     mux2 := io.ctrl2data.const
@@ -46,7 +48,7 @@ class DataStructure extends Chisel.Module
 
   //////////////////////MUX3/////////////////////////
   //MUX3: inputs: data mem address from control, rb from acc; output data mem.io.address
-  val mux3 = new Bool()
+  val mux3 = Wire(new Bool())
   when(io.ctrl2data.mux3sel === 1.U)
   {
     mux3 := rf.io.rb
@@ -59,6 +61,6 @@ class DataStructure extends Chisel.Module
   //////////////////////ALU & REGS/////////////////////////
 
   alu.io.a := rf.io.ra
-  rf.io.ra := io.data_mem.mem2data
+  //io.data_mem.mem2data := rf.io.ra
   rf.io.we := io.ctrl2data.regs_we
 }

@@ -6,7 +6,7 @@ import Common.Constants
 import chisel3._
 import chisel3.util.log2Ceil
 
-class RegisterFile extends Chisel.Module
+class RegisterFile extends Module
 {
   val io = IO( new Bundle
   {

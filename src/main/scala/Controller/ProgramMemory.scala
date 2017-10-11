@@ -1,6 +1,6 @@
 package Controller
 
-import Common.Buses.pmem2ctrl
+import Common.pmem2ctrl
 import Common.Constants
 import chisel3._
 
@@ -12,7 +12,7 @@ class ProgramMemory extends Chisel.Module
   })
 
   //Read Program Code
-  val src = scala.io.Source.fromFile("code.asm")
+  val src = scala.io.Source.fromFile("code.hex")
   val lines = try src.getLines() finally src.close()
 
   val inst = Array(UInt(Constants.INSTRUCTION_WIDTH.W))

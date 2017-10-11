@@ -2,7 +2,7 @@
 
 package DataStructure
 
-import Common.Buses.alu_flags
+import Common.alu_flags
 import Common.{ALU_Ops, Constants}
 import chisel3._
 import chisel3.util.{Cat, MuxCase}

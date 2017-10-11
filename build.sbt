@@ -9,14 +9,8 @@ resolvers ++= Seq(
   Resolver.sonatypeRepo("releases")
 )
 
-// Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
-val defaultVersions = Map(
-  "chisel3" -> "3.0-SNAPSHOT",
-  "chisel-iotesters" -> "1.1-SNAPSHOT"
-  )
-
-libraryDependencies ++= (Seq("chisel3","chisel-iotesters").map {
-  dep: String => "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep)) })
+libraryDependencies += "edu.berkeley.cs" % "chisel3_2.11" % "3.0-SNAPSHOT_2017-10-06"
+libraryDependencies += "edu.berkeley.cs" % "chisel-iotesters_2.11" % "1.1-SNAPSHOT_2017-10-06"
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.5",

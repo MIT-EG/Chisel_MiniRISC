@@ -4,8 +4,7 @@ package Common
 import chisel3._
 import chisel3.util.log2Ceil
 
-object Buses
-{
+
   class alu_flags extends Bundle
   {
     val carry = Bool()
@@ -85,4 +84,4 @@ object Buses
 
     val data = Output(UInt(Constants.DATA_WIDTH.W))
   }
-}
+

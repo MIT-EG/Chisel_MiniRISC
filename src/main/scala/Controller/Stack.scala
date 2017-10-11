@@ -1,7 +1,7 @@
 package Controller
 
 import Common.Constants
-import Common.Buses.flags
+import Common.flags
 import chisel3._
 import chisel3.util.{Cat, log2Ceil}
 
