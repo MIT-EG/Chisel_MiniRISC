@@ -29,6 +29,9 @@ import chisel3.util.log2Ceil
     val negative = Bool()
     val overflow = Bool()
     val zero = Bool()
+
+    //TODO kell ez nekem? regiszterben tárolt értékre jump van?
+    val reg_val = UInt(Constants.ALU_OP_WIDTH.W)
   }
 
   class ctrl2data extends Bundle
@@ -38,6 +41,7 @@ import chisel3.util.log2Ceil
     val mux3sel = Bool()
 
     val alu_op = UInt(Constants.ALU_OP_WIDTH.W)
+    val alu_flag = new alu_flags
     val const = UInt(Constants.DATA_WIDTH.W)
 
     val regs_a = UInt( log2Ceil( Constants.NUMBER_OF_REGISTERS ).W )

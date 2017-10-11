@@ -61,6 +61,15 @@ class DataStructure extends Chisel.Module
   //////////////////////ALU & REGS/////////////////////////
 
   alu.io.a := rf.io.ra
-  //io.data_mem.mem2data := rf.io.ra
+
+  io.data_mem.data2mem := rf.io.ra
+
   rf.io.we := io.ctrl2data.regs_we
+
+  //Register addresses from control
+  rf.io.addr_A := io.ctrl2data.regs_a
+  rf.io.addr_B := io.ctrl2data.regs_b
+
+  //TODO kell ez ide? regiszterben tárolt értékre jump van?
+  io.data2ctrl.reg_val := alu.io.y
 }

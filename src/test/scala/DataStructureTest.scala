@@ -24,16 +24,41 @@ class FibonacciTest(c: DataStructure) extends PeekPokeTester(c)
 {
   private val ds = c
 
-  //Load 0 to reg_0:
+  //Load 1 to reg_0:
+  poke(ds.io.ctrl2data.alu_op, Common.ALU_Ops.pass)
+  poke(ds.io.ctrl2data.mux1sel, 0)  //Alu.y := RegFile.din
+  poke(ds.io.ctrl2data.mux2sel, 1)  //const := alu.b
+  poke(ds.io.ctrl2data.const, 1)
+  poke(ds.io.ctrl2data.regs_a, 0)
+  poke(ds.io.ctrl2data.regs_we, 1)  //RegFile(0) = 1
+  step(1)
+  expect(ds.io.data2ctrl.reg_val, 1)
+  step(1)
+
+  //Load 1 to reg_1:
+  poke(ds.io.ctrl2data.alu_op, Common.ALU_Ops.pass)
   poke(ds.io.ctrl2data.mux1sel, 0)
   poke(ds.io.ctrl2data.mux2sel, 1)
-  poke(ds.io.ctrl2data.const, 0)
-  poke(ds.io.ctrl2data.regs_a, 0)
-  poke(ds.io.ctrl2data.regs_we, 1)
+  poke(ds.io.ctrl2data.const, 1)
+  poke(ds.io.ctrl2data.regs_a, 1)
+  poke(ds.io.ctrl2data.regs_we, 1)  //RegFile(1) = 1
   step(1)
-  expect(ds.rf.regs(0), 0)
+  expect(ds.io.data2ctrl.reg_val, 1)
+  step(1)
 
 
+  //add reg_0, reg_1 -> expect 2
+  poke(ds.io.ctrl2data.regs_we, 1)
+  poke(ds.io.ctrl2data.alu_op, Common.ALU_Ops.add)
+  poke(ds.io.ctrl2data.alu_flag.carry, 0)
+  poke(ds.io.ctrl2data.mux2sel, 0)  //Alu.b := RegFile.rb
+  poke(ds.io.ctrl2data.mux1sel, 0)  //Alu.y := RegFile.din
+
+  //poke(ds.io.ctrl2data.regs_a, 0)
+  //poke(ds.io.ctrl2data.regs_b, 1)
+  step(1)
+  //expect(ds.io.data2ctrl.reg_val, 2)
+  step(1)
 }
 
 class FibonacciTester extends ChiselFlatSpec
