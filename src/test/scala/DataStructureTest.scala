@@ -24,6 +24,7 @@ class FibonacciTest(c: DataStructure) extends PeekPokeTester(c)
 {
   private val ds = c
 
+  //////////////////////INITIALISE/////////////////////////
   //Load 1 to reg_0:
   poke(ds.io.ctrl2data.alu_op, Common.ALU_Ops.pass)
   poke(ds.io.ctrl2data.mux1sel, 0)  //Alu.y := RegFile.din
@@ -46,22 +47,47 @@ class FibonacciTest(c: DataStructure) extends PeekPokeTester(c)
   expect(ds.io.data2ctrl.reg_val, 1)
   step(1)
 
-
-  //add reg_0, reg_1 -> expect 2
+  //////////////////////ADD/////////////////////////
+  //Set wire for ADD operation
   poke(ds.io.ctrl2data.regs_we, 1)
   poke(ds.io.ctrl2data.alu_op, Common.ALU_Ops.add)
   poke(ds.io.ctrl2data.alu_flag.carry, 0)
+
   poke(ds.io.ctrl2data.mux2sel, 0)  //Alu.b := RegFile.rb
   poke(ds.io.ctrl2data.mux1sel, 0)  //Alu.y := RegFile.din
 
-  poke(ds.io.ctrl2data.regs_a, 0)
-  poke(ds.io.ctrl2data.regs_b, 1)
-  expect(ds.io.data2ctrl.reg_val, 2)
-  step(1)
+  //Set values to compute addresses and fibonacci values
+  var addr_a = 1
+  var addr_b = 0
+  var a = 1
+  var b = 1
+  var sum = 0
 
-  expect(ds.io.data2ctrl.reg_val, 3)
-  step(1)
-  expect(ds.io.data2ctrl.reg_val, 4)
+  //Cyclic
+  for (i <- 0 to 32 by 1)
+  {
+    //Compute fibonacci value and addresses
+    sum = (a + b) % 256
+    b = a
+    a = sum
+
+    if (addr_a == 1)
+      addr_a = 0
+    else
+      addr_a = 1
+
+    if (addr_b == 1)
+      addr_b = 0
+    else
+      addr_b = 1
+
+    //Set RegisterFile addresses, expect the sum of the 2 register values
+    poke(ds.io.ctrl2data.regs_a, addr_a)
+    poke(ds.io.ctrl2data.regs_b, addr_b)
+    expect(ds.io.data2ctrl.reg_val, sum)
+
+    step(1)
+  }
 }
 
 class FibonacciTester extends ChiselFlatSpec
