@@ -54,11 +54,14 @@ class FibonacciTest(c: DataStructure) extends PeekPokeTester(c)
   poke(ds.io.ctrl2data.mux2sel, 0)  //Alu.b := RegFile.rb
   poke(ds.io.ctrl2data.mux1sel, 0)  //Alu.y := RegFile.din
 
-  //poke(ds.io.ctrl2data.regs_a, 0)
-  //poke(ds.io.ctrl2data.regs_b, 1)
+  poke(ds.io.ctrl2data.regs_a, 0)
+  poke(ds.io.ctrl2data.regs_b, 1)
+  expect(ds.io.data2ctrl.reg_val, 2)
   step(1)
-  //expect(ds.io.data2ctrl.reg_val, 2)
+
+  expect(ds.io.data2ctrl.reg_val, 3)
   step(1)
+  expect(ds.io.data2ctrl.reg_val, 4)
 }
 
 class FibonacciTester extends ChiselFlatSpec

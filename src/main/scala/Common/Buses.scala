@@ -25,10 +25,13 @@ import chisel3.util.log2Ceil
 
   class data2ctrl extends Bundle
   {
+    /*
     val carry = Bool()
     val negative = Bool()
     val overflow = Bool()
     val zero = Bool()
+    */
+    val alu_flag = new alu_flags
 
     //TODO kell ez nekem? regiszterben tárolt értékre jump van?
     val reg_val = UInt(Constants.ALU_OP_WIDTH.W)
