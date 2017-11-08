@@ -58,6 +58,7 @@ class DataStructure extends Chisel.Module
   io.data2ctrl.reg_val := alu.io.y
 
   //////////////////////REGISTER FILE/////////////////////////
+
   //RF: addr_a, addr_b, we, ra
 
   //addr_a
@@ -71,4 +72,9 @@ class DataStructure extends Chisel.Module
 
   //RF ra := data mem din
   io.data_mem.data2mem := rf.io.ra
+
+  //////////////////////DATAMEMORY/////////////////////////
+
+  io.data_mem.rd := io.ctrl2data.mem_rd
+  io.data_mem.wr := io.ctrl2data.mem_wr
 }

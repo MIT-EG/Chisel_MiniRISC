@@ -4,6 +4,8 @@ import Common.pmem2ctrl
 import Common.Constants
 import chisel3._
 
+import scala.io.Source
+
 class ProgramMemory extends Chisel.Module
 {
   val io = IO( new Bundle
@@ -12,18 +14,17 @@ class ProgramMemory extends Chisel.Module
   })
 
   //Read Program Code
-  val src = scala.io.Source.fromFile("code.hex")
-  val lines = try src.getLines() finally src.close()
-
-  val inst = Array(UInt(Constants.INSTRUCTION_WIDTH.W))
-  var cntr = 0
-  for (line <- lines)
+  val inst = List(UInt(Constants.INSTRUCTION_WIDTH.W))
+  val fileName = "code.hex"
+  for (line <- Source.fromFile(fileName).getLines())
   {
-    inst(cntr) = line.asUInt(Constants.INSTRUCTION_WIDTH.W)
+    inst :+ line.asUInt(Constants.INSTRUCTION_WIDTH.W) //Append item???
+    //TODO: Exception in thread "main" java.lang.NumberFormatException: For input string: "222"
   }
 
   //Load Program Code to ROM
-  val mem = Vec(inst)
+  //val mem = Vec(inst)
+  val mem = VecInit(inst)
 
   //Read Instruction From ROM
   io.mem_if.data := mem(io.mem_if.addr)

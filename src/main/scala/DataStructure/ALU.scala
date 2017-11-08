@@ -2,7 +2,7 @@
 
 package DataStructure
 
-import Common.alu_flags
+import Common.flags
 import Common.{ALU_Ops, Constants}
 import chisel3._
 import chisel3.util.{Cat, MuxCase}
@@ -15,10 +15,10 @@ class ALU extends Chisel.Module
     val a       = Input(UInt(Constants.DATA_WIDTH.W))
     val b       = Input(UInt(Constants.DATA_WIDTH.W))
     val op      = Input(UInt(Constants.ALU_OP_WIDTH.W))
-    val flag_in  = Input(new alu_flags)
+    val flag_in  = Input(new flags)
 
     val y       = Output(UInt(Constants.DATA_WIDTH.W))
-    val flag_out = Output(new alu_flags)
+    val flag_out = Output(new flags)
   })
 
   //***OPERATIONS***
