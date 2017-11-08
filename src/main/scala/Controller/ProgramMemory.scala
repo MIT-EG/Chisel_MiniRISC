@@ -18,13 +18,13 @@ class ProgramMemory extends Chisel.Module
   val fileName = "code.hex"
   for (line <- Source.fromFile(fileName).getLines())
   {
-    inst :+ line.asUInt(Constants.INSTRUCTION_WIDTH.W) //Append item???
+    inst :+ ("h" + line).U(Constants.INSTRUCTION_WIDTH.W) //Append item???
     //TODO: Exception in thread "main" java.lang.NumberFormatException: For input string: "222"
   }
 
   //Load Program Code to ROM
-  //val mem = Vec(inst)
-  val mem = VecInit(inst)
+  val mem = Vec(inst.toIndexedSeq)
+  //val mem = VecInit(inst)
 
   //Read Instruction From ROM
   io.mem_if.data := mem(io.mem_if.addr)

@@ -151,6 +151,7 @@ class FSM extends Chisel.Module
             io.ctrl.regs_a := C
             io.ctrl.mem_addr := Cat(B, A)
             io.pc_inc := 1.U
+            io.ctrl.regs_we := 1.U
           }
 
           is (OPCODE_ST.U)
