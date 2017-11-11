@@ -77,7 +77,7 @@ import chisel3.util.log2Ceil
 
   class pmem2ctrl extends Bundle
   {
-    val addr = Input(UInt(Constants.PROGRAM_MEMORY_SIZE.W))
+    val addr = Input(UInt(log2Ceil(Constants.PROGRAM_MEMORY_SIZE).W))
 
     val data = Output(UInt(Constants.DATA_WIDTH.W))
   }

@@ -10,9 +10,12 @@ object GeneratorApp extends App
     //chisel3.Driver.execute(args, () => new Controller.PC())
     //chisel3.Driver.execute(args, () => new Controller.Stack())
 
-    //TODO: ezeket debugolni
-    chisel3.Driver.execute(args, () => new Controller.ProgramMemory())
+
+    //chisel3.Driver.execute(args, () => new Controller.ProgramMemory())
 
     //chisel3.Driver.execute(args, () => new Controller.Controller())
+    //chisel3.Driver.execute(args, () => new Controller.FSM())
+
+    chisel3.Driver.execute(args, () => new Common.MiniRISC())
   }
 

@@ -7,18 +7,18 @@ class DataMemory extends Chisel.Module
 {
   val io = IO(new Bundle
   {
-    val mem_if = new Common.dmem2data();
+    val dmem2data = new Common.dmem2data();
   })
 
   val mem = Mem(Constants.DATA_MEMORY_SIZE, UInt(Constants.DATA_WIDTH.W))
 
   //Írásnak nagyobb a prioritása
-  when(io.mem_if.wr === 1.U)
+  when(io.dmem2data.wr === 1.U)
   {
-    mem(io.mem_if.addr) := io.mem_if.data2mem
+    mem(io.dmem2data.addr) := io.dmem2data.data2mem
   }
-  when(io.mem_if.rd === 1.U && io.mem_if.wr === 0.U)
+  when(io.dmem2data.rd === 1.U && io.dmem2data.wr === 0.U)
   {
-    io.mem_if.mem2data := mem(io.mem_if.addr)
+    io.dmem2data.mem2data := mem(io.dmem2data.addr)
   }
 }

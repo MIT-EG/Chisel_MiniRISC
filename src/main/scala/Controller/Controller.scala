@@ -7,9 +7,9 @@ class Controller extends Chisel.Module
   //////////////////////PORT/////////////////////////
   val io = IO( new Bundle
   {
-    val data2ctrl = Output(new Common.data2ctrl)
+    val data2ctrl = Input(new Common.data2ctrl)
 
-    val ctrl2data = Input(new Common.ctrl2data)
+    val ctrl2data = Output(new Common.ctrl2data)
 
     val ctrl2pmem = new Common.ctrl2pmem
   })
@@ -19,20 +19,17 @@ class Controller extends Chisel.Module
   val fsm = Module(new Controller.FSM())
   val stack = Module(new Controller.Stack())
 
-  //////////////////////PC/////////////////////////
-  io.ctrl2pmem.addr := pc.io.pc
-
-  pc.io.ret_addr := stack.io.pc_out
-
-  //...
-
   //////////////////////FSM/////////////////////////
 
+  //TODO: Ez kell ide? FSM - Fetch is ezt csinálja
   //IR: Instruction Register
-  val IR = Reg(UInt(Common.Constants.INSTRUCTION_WIDTH), io.ctrl2pmem.data, 0.U) //datatype, next value, initial value
+  val IR = Reg(UInt(Common.Constants.INSTRUCTION_WIDTH.W), io.ctrl2pmem.data, 0.U) //datatype, next value, initial value
   fsm.io.inst := IR
 
   io.ctrl2data := fsm.io.ctrl
+
+  //DataStructure to Control
+  fsm.io.alu_y := io.data2ctrl.reg_val
 
   //FSM - Stack
   stack.io.pop := fsm.io.stack_pop
@@ -44,9 +41,36 @@ class Controller extends Chisel.Module
   pc.io.ret := fsm.io.pc_ret
   pc.io.jmp_addr := fsm.io.pc_jmp_addr
 
+  //////////////////////PC/////////////////////////
+  io.ctrl2pmem.addr := pc.io.pc
+
+  pc.io.ret_addr := stack.io.pc_out.pc
+
   //////////////////////STACK/////////////////////////
 
-  stack.io.pc_in := pc.io.pc
+  stack.io.pc_in.pc := pc.io.pc
 
   //////////////////////PROGRAM MEMORY/////////////////////////
+
+  //////////////////////FLAGS/////////////////////////
+  val IE = RegInit(Bool(), 0.U)
+  val IF = RegInit(Bool(), 0.U)
+  val Z = RegInit(Bool(), 0.U)
+  val C = RegInit(Bool(), 0.U)
+  val N = RegInit(Bool(), 0.U)
+  val V = RegInit(Bool(), 0.U)
+  when (fsm.io.valid === 1.U)
+  {
+    IE := fsm.io.IE
+    IF := fsm.io.IF
+    Z := io.data2ctrl.alu_flag.zero
+    C := io.data2ctrl.alu_flag.carry
+    N := io.data2ctrl.alu_flag.negative
+    V := io.data2ctrl.alu_flag.overflow
+  }
+
+  fsm.io.flag_in.zero := Z
+  fsm.io.flag_in.carry := C
+  fsm.io.flag_in.negative := N
+  fsm.io.flag_in.overflow := V
 }

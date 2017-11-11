@@ -152,6 +152,7 @@ object OpCodes
   val OPCODE_AND = 0x4 // 4'b0100
   val OPCODE_OR = 0x5 // 4'b0101
   val OPCODE_XOR = 0x6 // 4'b0110
+  val OPCODE_SWP = 0x7 // 4'b0111
 
   val LOGIC_AND = 0x0 // 2'b00
   val LOGIC_OR = 0x1 // 2'b01
