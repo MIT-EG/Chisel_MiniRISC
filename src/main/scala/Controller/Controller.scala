@@ -11,7 +11,9 @@ class Controller extends Chisel.Module
 
     val ctrl2data = Output(new Common.ctrl2data)
 
-    val ctrl2pmem = new Common.ctrl2pmem
+    val ctrl2pmem = Output(new Common.ctrl2pmem)
+
+    val pmem2ctrl = Input(new Common.pmem2ctrl)
   })
 
   //////////////////////INSTANTIATE/////////////////////////
@@ -23,7 +25,7 @@ class Controller extends Chisel.Module
 
   //TODO: Ez kell ide? FSM - Fetch is ezt csinálja
   //IR: Instruction Register
-  val IR = Reg(UInt(Common.Constants.INSTRUCTION_WIDTH.W), io.ctrl2pmem.data, 0.U) //datatype, next value, initial value
+  val IR = Reg(UInt(Common.Constants.INSTRUCTION_WIDTH.W), io.ctrl2pmem.addr, 0.U) //datatype, next value, initial value
   fsm.io.inst := IR
 
   io.ctrl2data := fsm.io.ctrl

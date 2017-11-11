@@ -10,7 +10,9 @@ class DataStructure extends Chisel.Module
   //////////////////////PORT/////////////////////////
   val io = IO(new Bundle
   {
-    val data_mem = new Common.data2dmem()
+    val data2dmem = Output(new Common.data2dmem())
+
+    val dmem2data = Input(new Common.dmem2data())
 
     val ctrl2data = Input(new ctrl2data())
 
@@ -24,7 +26,7 @@ class DataStructure extends Chisel.Module
   //////////////////////MUX1/////////////////////////
   //MUX1: inputs: memory data in, alu dout; output: regs data in
   //y = Mux(sel, 1, 0)
-  rf.io.din := Mux(io.ctrl2data.mux1sel === 1.U, io.data_mem.mem2data, alu.io.y)
+  rf.io.din := Mux(io.ctrl2data.mux1sel === 1.U, io.dmem2data.mem2data, alu.io.y)
 
   //////////////////////MUX2/////////////////////////
   //MUX2: inputs: constant from control, regb from regs; output alu op2
@@ -34,7 +36,7 @@ class DataStructure extends Chisel.Module
   //////////////////////MUX3/////////////////////////
   //MUX3: inputs: data mem address from control, rb from acc; output data mem.io.address
   //y = Mux(sel, 1, 0)
-  io.data_mem.addr := Mux(io.ctrl2data.mux3sel === 1.U, rf.io.rb, io.ctrl2data.mem_addr)
+  io.data2dmem.addr := Mux(io.ctrl2data.mux3sel === 1.U, rf.io.rb, io.ctrl2data.mem_addr)
 
   //////////////////////ALU/////////////////////////
 
@@ -71,10 +73,10 @@ class DataStructure extends Chisel.Module
   rf.io.we := io.ctrl2data.regs_we
 
   //RF ra := data mem din
-  io.data_mem.data2mem := rf.io.ra
+  io.data2dmem.data := rf.io.ra
 
   //////////////////////DATAMEMORY/////////////////////////
 
-  io.data_mem.rd := io.ctrl2data.mem_rd
-  io.data_mem.wr := io.ctrl2data.mem_wr
+  io.data2dmem.rd := io.ctrl2data.mem_rd
+  io.data2dmem.wr := io.ctrl2data.mem_wr
 }

@@ -1,7 +1,6 @@
 package Controller
 
-import Common.pmem2ctrl
-import Common.Constants
+import Common.{Constants, ctrl2pmem, pmem2ctrl}
 import chisel3._
 
 import scala.io.Source
@@ -10,7 +9,8 @@ class ProgramMemory extends Chisel.Module
 {
   val io = IO( new Bundle
   {
-    val pmem2ctrl = new pmem2ctrl()
+    val pmem2ctrl = Output(new pmem2ctrl())
+    val ctrl2pmem = Input(new ctrl2pmem())
   })
 
   //Read Program Code
@@ -23,5 +23,5 @@ class ProgramMemory extends Chisel.Module
   val mem = Vec(inst.toIndexedSeq)
 
   //Read Instruction From ROM
-  io.pmem2ctrl.data := mem(io.pmem2ctrl.addr)
+  io.pmem2ctrl.data := mem(io.ctrl2pmem.addr)
 }

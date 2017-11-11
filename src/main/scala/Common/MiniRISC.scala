@@ -18,7 +18,11 @@ class MiniRISC extends Chisel.Module
   val dmem = Module(new DataMemory())
 
   ctrl.io.data2ctrl := datastruct.io.data2ctrl
-  ctrl.io.ctrl2pmem := pmem.io.pmem2ctrl
-  datastruct.io.ctrl2data := ctrl.io.ctrl2pmem
-  datastruct.io.data_mem := dmem.io.dmem2data
+  datastruct.io.ctrl2data := ctrl.io.ctrl2data
+
+  ctrl.io.pmem2ctrl := pmem.io.pmem2ctrl
+  pmem.io.ctrl2pmem := ctrl.io.ctrl2pmem
+
+  datastruct.io.dmem2data := dmem.io.dmem2data
+  dmem.io.data2dmem := datastruct.io.data2dmem
 }

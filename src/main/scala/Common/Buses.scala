@@ -48,37 +48,26 @@ import chisel3.util.log2Ceil
 
   class data2dmem extends Bundle
   {
-    val data2mem = Output(UInt(Constants.DATA_WIDTH.W))
-    val mem2data = Input(UInt(Constants.DATA_WIDTH.W))
+    val data = UInt(Constants.DATA_WIDTH.W)
 
-    val addr = Output(UInt(log2Ceil(Constants.DATA_MEMORY_SIZE).W))
+    val addr = UInt(log2Ceil(Constants.DATA_MEMORY_SIZE).W)
 
-    val rd = Output(Bool())
-    val wr = Output(Bool())
+    val rd = Bool()
+    val wr = Bool()
   }
 
   class dmem2data extends Bundle
   {
-    val data2mem = Input(UInt(Constants.DATA_WIDTH.W))
-    val mem2data = Output(UInt(Constants.DATA_WIDTH.W))
-
-    val addr = Input(UInt(log2Ceil(Constants.DATA_MEMORY_SIZE).W))
-
-    val rd = Input(Bool())
-    val wr = Input(Bool())
+    val mem2data = UInt(Constants.DATA_WIDTH.W)
   }
 
   class ctrl2pmem extends Bundle
   {
-    val addr = Output(UInt(Constants.PROGRAM_MEMORY_SIZE.W))
-
-    val data = Input(UInt(Constants.DATA_WIDTH.W))
+    val addr = Output(UInt(log2Ceil(Constants.PROGRAM_MEMORY_SIZE).W))
   }
 
   class pmem2ctrl extends Bundle
   {
-    val addr = Input(UInt(log2Ceil(Constants.PROGRAM_MEMORY_SIZE).W))
-
-    val data = Output(UInt(Constants.DATA_WIDTH.W))
+    val data = UInt(Constants.DATA_WIDTH.W)
   }
 

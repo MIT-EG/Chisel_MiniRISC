@@ -16,6 +16,6 @@ object GeneratorApp extends App
     //chisel3.Driver.execute(args, () => new Controller.Controller())
     //chisel3.Driver.execute(args, () => new Controller.FSM())
 
-    chisel3.Driver.execute(args, () => new Common.MiniRISC())
+    //chisel3.Driver.execute(args, () => new Common.MiniRISC())
   }
 
