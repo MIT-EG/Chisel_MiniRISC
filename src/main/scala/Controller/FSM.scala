@@ -41,8 +41,8 @@ class FSM extends Chisel.Module
   })
 
   //TODO: ez nem jó -> hogy kell állapotgépet csinálni???
-  val sFSM :: sFETCH :: sDECODE :: sEXECUTE = Enum(3)
-  val fsm = RegInit(sFSM, sFETCH)
+  val sFETCH :: sDECODE :: sEXECUTE :: Nil = Enum(3)
+  val fsm = RegInit(sFETCH)
 
   val inst_reg = Reg(UInt(Constants.INSTRUCTION_WIDTH.W))
 
@@ -59,9 +59,12 @@ class FSM extends Chisel.Module
     {
       inst_reg := io.inst
       //TODO: Itt mit csináljon az DATASTRUCTURE?? alu pass és registerfile írásengedélyezés tiltása?
+      //Úgy álítom h ne csináljon semmit
     }
     is (sDECODE)
     {
+      //Szétbontani utaítás típusokra(load, aritmatikai...)
+
       /////////////////////////////////////////////////////////////////////////////////
       //B type instruction:
       //|  1111  | rX/vezérlés | opkód  | rY/vezérlés |
@@ -73,38 +76,147 @@ class FSM extends Chisel.Module
           is (OPCODE_LD.U)
           {
             // | 1111 |   rX   |  1101  |    rY   |
+            //Adatmemória olvasás indirekt címzéssel: rX <- DMEM[rY]
+            io.ctrl.mux3sel := 1.U  //indirekt címzés
+            io.ctrl.regs_b := A     //rY kiválasztás
+
+            io.ctrl.mem_rd := 1.U   //memória olvasás művelet
+            io.ctrl.mem_wr := 0.U
+
+            io.ctrl.mux1sel := 1.U  //memória adat
+            io.ctrl.regs_a := C     //rX cím
+            io.ctrl.regs_we := 1.U  //regiszter írás
+
+            io.pc_inc := 1.U        //PC inkrementálás
           }
 
           is (OPCODE_ST.U)
           {
             // | 1111 |   rX   |  1001  |    rY   |
+            //Adatmemória írás indirekt címzéssel: DMEM[rY] <- rX
+            io.ctrl.mux3sel := 1.U  //indirekt címzés
+            io.ctrl.regs_b := A     //rY kiválasztás
+
+            io.ctrl.mem_rd := 0.U
+            io.ctrl.mem_wr := 1.U   //memória írás művelet
+
+            io.ctrl.regs_a := C     //rX cím
+            io.ctrl.regs_we := 0.U
+
+            io.pc_inc := 1.U        //PC növelése
           }
 
           is (OPCODE_MOV.U)
           {
             // | 1111 |   rX   |  1100  |    rY   |
+            //Adatmozgatás regiszterbõl regiszterbe: rX <- rY
+            io.ctrl.mem_rd := 0.U
+            io.ctrl.mem_wr := 0.U
+
+            io.ctrl.alu_op := ALU_Ops.pass.U  //ALU művelet
+            io.ctrl.regs_b := A               //rY
+            io.ctrl.mux2sel := 1.U            //ALU 2 regiszter
+
+            io.ctrl.mux1sel := 0.U            //ALU y -> RF din
+            io.ctrl.regs_we := 1.U            //regiszter írás
+            io.ctrl.regs_a := C               //rX
+
+            io.pc_inc := 1.U        //PC növelése
           }
 
           is (OPCODE_ADD.U)
           {
             // | 1111 |   rX   |  00SC  |    rY   |
+            //Regiszter hozzáadása regiszterhez átvitel nélkül: rX <- rX + rY
+            io.ctrl.mem_rd := 0.U
+            io.ctrl.mem_wr := 0.U
+
+            io.ctrl.regs_b := A
+            io.ctrl.mux2sel := 0.U
+
+            io.ctrl.regs_a := C
+            io.ctrl.regs_we := 1.U
+
+            io.ctrl.alu_op := ALU_Ops.add.U
+            io.ctrl.alu_flag.carry := 0.U
+            io.ctrl.mux1sel := 0.U
+
+            io.pc_inc := 1.U
           }
           is (OPCODE_ADC.U)
           {
             // | 1111 |   rX   |  00SC  |    rY   |
+            //Regiszter hozzáadása regiszterhez átvitellel: rX <- rX + rY + C
+            io.ctrl.mem_rd := 0.U
+            io.ctrl.mem_wr := 0.U
+
+            io.ctrl.regs_b := A
+            io.ctrl.mux2sel := 0.U
+
+            io.ctrl.regs_a := C
+            io.ctrl.regs_we := 1.U
+
+            io.ctrl.alu_op := ALU_Ops.add.U
+            io.ctrl.alu_flag.carry := 1.U
+            io.ctrl.mux1sel := 0.U
+
+            io.pc_inc := 1.U
           }
           is (OPCODE_SUB.U)
           {
             // | 1111 |   rX   |  00SC  |    rY   |
+            //Regiszter kivonása regiszterbõl átvitel nélkül: rX <- rX - rY
+            io.ctrl.mem_rd := 0.U
+            io.ctrl.mem_wr := 0.U
+
+            io.ctrl.regs_b := A
+            io.ctrl.mux2sel := 0.U
+
+            io.ctrl.regs_a := C
+            io.ctrl.regs_we := 1.U
+
+            io.ctrl.alu_op := ALU_Ops.sub.U
+            io.ctrl.alu_flag.carry := 0.U
+            io.ctrl.mux1sel := 0.U
+
+            io.pc_inc := 1.U
           }
           is (OPCODE_SBC.U)
           {
             // | 1111 |   rX   |  00SC  |    rY   |
+            //Regiszter kivonása regiszterbõl átvitellel: rX <- rX - rY + C
+            io.ctrl.mem_rd := 0.U
+            io.ctrl.mem_wr := 0.U
+
+            io.ctrl.regs_b := A
+            io.ctrl.mux2sel := 0.U
+
+            io.ctrl.regs_a := C
+            io.ctrl.regs_we := 1.U
+
+            io.ctrl.alu_op := ALU_Ops.sub.U
+            io.ctrl.alu_flag.carry := 1.U
+            io.ctrl.mux1sel := 0.U
+
+            io.pc_inc := 1.U
           }
 
           is (OPCODE_CMP.U)
           {
             // | 1111 |   rX   |  1010  |    rY   |
+            //Regiszter összehasonlítása regiszterrel: rX - rY
+            io.ctrl.mem_rd := 0.U
+            io.ctrl.mem_wr := 0.U
+
+            io.ctrl.regs_b := A
+            io.ctrl.mux2sel := 0.U
+
+            io.ctrl.regs_a := C
+            io.ctrl.regs_we := 0.U
+
+            io.ctrl.alu_op := ALU_Ops.cmp.U
+
+            io.pc_inc := 1.U
           }
 
           is (OPCODE_AND.U)
@@ -147,48 +259,166 @@ class FSM extends Chisel.Module
           is (OPCODE_LD.U)
           {
             // | 1101 |   rX   | adatmemória cím  |
-            //TODO: így kell???????????
-            io.ctrl.regs_a := C
-            io.ctrl.mem_addr := Cat(B, A)
-            io.pc_inc := 1.U
-            io.ctrl.regs_we := 1.U
+            //Adatmemória olvasás abszolút címzéssel: rX <- DMEM[addr]
+            io.ctrl.mem_addr := Cat(B, A) //abszolút memória cím
+            io.ctrl.mux3sel := 0.U        //abszolút címzés
+            io.ctrl.mem_rd := 1.U         //memória olvasás
+            io.ctrl.mem_wr := 0.U
+
+            io.ctrl.mux1sel := 1.U        //memória data
+
+            io.ctrl.regs_a := C           //rx cím
+            io.ctrl.regs_we := 1.U        //regiszter írás
+
+            io.pc_inc := 1.U              //PC növelése
           }
 
           is (OPCODE_ST.U)
           {
             // | 1001 |   rX   | adatmemória cím  |
+            //Adatmemória írás abszolút címzéssel: DMEM[addr] <- rX
+            io.ctrl.mem_addr := Cat(B, A) //abszolút memória cím
+            io.ctrl.mux3sel := 0.U        //abszolút címzés
+            io.ctrl.mem_wr := 1.U         //memória írás
+            io.ctrl.mem_rd := 0.U
+
+            io.ctrl.regs_a := C           //rx cím
+            io.ctrl.regs_we := 0.U
+
+            io.pc_inc := 1.U              //PC növelése
           }
 
           is (OPCODE_MOV.U)
           {
             // | 1100 |   rX   | 8 bites konstans |
+            //Konstans betöltése regiszterbe: rX <- imm
+            io.ctrl.mem_wr := 0.U
+            io.ctrl.mem_rd := 0.U
+
+            io.ctrl.regs_we := 1.U      //regiszter írás
+            io.ctrl.regs_a := C
+
+            io.ctrl.const := Cat(B, A)  //konstans
+            io.ctrl.mux2sel := 1.U      //konstans -> ALU
+            io.ctrl.alu_op := ALU_Ops.pass.U  //ALU művelet
+            io.ctrl.mux1sel := 0.U      //ALU y -> RF din
+
+            io.pc_inc := 1.U              //PC növelése
           }
 
           is (OPCODE_ADD.U)
           {
             // | 00SC |   rX   | 8 bites konstans |
+            //Konstans hozzáadása regiszterhez átvitel nélkül: rX <- rX + imm
+            io.ctrl.mem_wr := 0.U
+            io.ctrl.mem_rd := 0.U
+
+            io.ctrl.regs_a := C     //rX
+            io.ctrl.regs_we := 1.U  //regiszter írás
+
+            io.ctrl.const := Cat(B, A)  //konstans
+            io.ctrl.mux2sel := 1.U      //konstans -> alu
+            io.ctrl.alu_flag.carry := 0.U //carry
+            io.ctrl.alu_op := ALU_Ops.add.U //ALU művelet
+
+            io.ctrl.mux1sel := 0.U  //alu y -> rf din
+
+            io.pc_inc := 1.U              //PC növelése
           }
           is (OPCODE_ADC.U)
           {
             // | 00SC |   rX   | 8 bites konstans |
+            //Konstans hozzáadása regiszterhez átvitellel: rX <- rX + imm + C
+            io.ctrl.mem_wr := 0.U
+            io.ctrl.mem_rd := 0.U
+
+            io.ctrl.regs_a := C     //rX
+            io.ctrl.regs_we := 1.U  //regiszter írás
+
+            io.ctrl.const := Cat(B, A)  //konstans
+            io.ctrl.mux2sel := 1.U      //konstans -> alu
+            io.ctrl.alu_flag.carry := 1.U //carry
+            io.ctrl.alu_op := ALU_Ops.add.U //ALU művelet
+
+            io.ctrl.mux1sel := 0.U  //alu y -> rf din
+
+            io.pc_inc := 1.U              //PC növelése
           }
           is (OPCODE_SUB.U)
           {
             // | 00SC |   rX   | 8 bites konstans |
+            //Konstans kivonása regiszterbõl átvitel nélkül: rX <- rX - imm
+            io.ctrl.mem_wr := 0.U
+            io.ctrl.mem_rd := 0.U
+
+            io.ctrl.regs_a := C     //rX
+            io.ctrl.regs_we := 1.U  //regiszter írás
+
+            io.ctrl.const := Cat(B, A)  //konstans
+            io.ctrl.mux2sel := 1.U      //konstans -> alu
+            io.ctrl.alu_flag.carry := 0.U //carry
+            io.ctrl.alu_op := ALU_Ops.sub.U //ALU művelet
+
+            io.ctrl.mux1sel := 0.U  //alu y -> rf din
+
+            io.pc_inc := 1.U              //PC növelése
           }
           is (OPCODE_SBC.U)
           {
             // | 00SC |   rX   | 8 bites konstans |
+            //Konstans kivonása regiszterbõl átvitellel: rX <- rX - imm + C
+            io.ctrl.mem_wr := 0.U
+            io.ctrl.mem_rd := 0.U
+
+            io.ctrl.regs_a := C     //rX
+            io.ctrl.regs_we := 1.U  //regiszter írás
+
+            io.ctrl.const := Cat(B, A)  //konstans
+            io.ctrl.mux2sel := 1.U      //konstans -> alu
+            io.ctrl.alu_flag.carry := 1.U //carry
+            io.ctrl.alu_op := ALU_Ops.sub.U //ALU művelet
+
+            io.ctrl.mux1sel := 0.U  //alu y -> rf din
+
+            io.pc_inc := 1.U              //PC növelése
           }
 
           is (OPCODE_CMP.U)
           {
             // | 1010 |   rX   | 8 bites konstans |
+            //Regiszter összehasonlítása konstanssal: rX - imm
+            io.ctrl.mem_wr := 0.U
+            io.ctrl.mem_rd := 0.U
+
+            io.ctrl.regs_we := 0.U
+
+            io.ctrl.alu_op := ALU_Ops.cmp.U
+
+            io.ctrl.const := Cat(B, A)
+            io.ctrl.mux2sel := 1.U
+
+            io.ctrl.regs_a := C
+
+            io.pc_inc := 1.U              //PC növelése
           }
 
           is (OPCODE_AND.U)
           {
             // | 01AB |   rX   | 8 bites konstans |
+            //Bitenkénti ÉS konstanssal: rX <- rX & imm
+            io.ctrl.mem_wr := 0.U
+            io.ctrl.mem_rd := 0.U
+
+            io.ctrl.regs_a := C
+            io.ctrl.regs_we := 1.U
+            io.ctrl.mux1sel := 0.U
+
+            io.ctrl.alu_op := ALU_Ops.and.U
+
+            io.ctrl.const := Cat(B, A)
+            io.ctrl.mux2sel := 1.U
+
+            io.pc_inc := 1.U
           }
           is (OPCODE_OR.U)
           {
@@ -215,7 +445,8 @@ class FSM extends Chisel.Module
     }
     is (sEXECUTE)
     {
-
+      //várok egy órajelet
+      fsm := sFETCH
     }
   }
 }
